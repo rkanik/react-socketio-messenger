@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom"
 import "./messages-list.scss"
 
 const MessagesList = ({ items }) => {
+   console.log("MessagesList", items);
    const history = useHistory()
    return (
       <div className='messages-list text-white pt-5'>{

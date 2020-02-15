@@ -1,42 +1,58 @@
 import React, { useState, useEffect } from 'react';
 import { Route } from "react-router-dom"
-import { User } from "../../axios/configs.axios"
-import auth from "../../auth/auth"
+import { connect } from "react-redux"
 import "./messages.scss"
 
 // Components
-import MessagesList from "../../components/messages-list/messages-list"
+import Sidebar from "../../layouts/sidebar/sidebar"
 import Conversation from "../../components/group-conversation/group-conversation"
+import CreateGroup from "../../components/modals/createGroup/createGroup"
 
-const me = "5e4302270006fe08d471c94b"
+// Store
+import { fetchUser, setState } from "../../store/auth.store/auth.store"
+import { fetchGroups } from "../../store/group.store/group.store"
 
-const Messages = ({ history }) => {
+const mapActions = dispatch => ({
+   setState: () => dispatch(setState()),
+   fetchUser: () => dispatch(fetchUser()),
+   fetchGroups: me => dispatch(fetchGroups(me))
+})
 
-   const [groups, setGroups] = useState([])
-   const [isAuth] = useState(auth.isAuth)
+const mapStates = state => state
+const Messages = ({ auth, group, history, ...props }) => {
 
-   const fetchGroups = () => {
-      console.log("fetchGroups");
-      User.get(`/${me}/groups?select=name,thumbnail,members`)
-         .then(({ data }) => {
-            setGroups(data)
-         })
-         .catch(err => {
-            let { status, statusText } = err.response
-            console.log(status, statusText);
-         })
-   }
+   const [state, setState] = useState({
+      createGroup: false
+   })
+
+   const _setState = payload => setState({ ...state, ...payload })
 
    useEffect(() => {
-      isAuth ? fetchGroups() : history.replace("/auth.login")
-   }, [isAuth, history])
+      console.log(auth.initializing, auth.isAuth);
+      if (!auth.initializing && !auth.isAuth) {
+         history.replace("/auth/login")
+      } else if (!auth.initializing && auth.isAuth) {
+         props.fetchGroups(auth.currentUser._id)
+      }
+   }, [auth.isAuth, auth.initializing])
 
-   return <>{isAuth &&
+   useEffect(() => { props.fetchUser() }, [])
+
+   return (
       <div className="messages d-flex">
-         <MessagesList items={groups} />
-         <Route path="/messages/g/:_id" component={Conversation} />
+         {!auth.initializing &&
+            <>
+               <Sidebar items={group.groups} user={auth.currentUser} setState={_setState} />
+               <div className='pa-5'>
+                  <h1>{auth.initializing && "Initializing..."}</h1>
+               </div>
+               <Route path="/messages/g/:_id" component={Conversation} />
+            </>
+         }
+         {/* Models */}
+         {state.createGroup && <CreateGroup setState={_setState} />}
       </div>
-   }</>
+   )
 }
 
-export default Messages;
+export default connect(mapStates, mapActions)(Messages);

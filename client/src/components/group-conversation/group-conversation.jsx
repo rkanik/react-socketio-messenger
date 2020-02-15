@@ -23,7 +23,7 @@ const Conversation = ({ match: { params } }) => {
          client.disconnect()
          client.off()
       }
-   }, [params._id])
+   }, [params._id, client])
 
    const handleKeyPress = e => {
       if (e.key === "Enter") {

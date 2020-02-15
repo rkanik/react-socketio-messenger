@@ -6,11 +6,13 @@ const Login = ({ history: { replace } }) => {
    useEffect(() => {
       let token = queryString.parse(window.location.search).token || localStorage.getItem("token")
       if (token) {
-         localStorage.setItem("token", token)
+         //replace("/messages")
+         localStorage.setItem("access-token", token)
+         console.log(token);
       } else {
          console.log("No token");
       }
-   }, [])
+   }, [replace])
    const [isAuth] = useState(auth.isAuth)
    useEffect(() => { isAuth && replace("/messages") })
    return (
