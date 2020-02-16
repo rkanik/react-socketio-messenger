@@ -1,0 +1,52 @@
+.signin {
+   background: linear-gradient(to right, rgb(127, 127, 213), rgb(134, 168, 231), #91eae4);
+   .c-card {
+      width: 22rem;
+      background-color: white;
+      .card-header {
+         h2 {
+            color: #212121;
+         }
+      }
+      .form {
+         .input-group {
+            input {
+               height: 2rem;
+               border: 1px solid #bdbdbd;
+               //border-radius: 0.2rem;
+               font-size: 0.9em;
+            }
+            label {
+               color: #212121;
+            }
+         }
+         .btn-signin {
+            background: linear-gradient(to right, rgb(142, 45, 226), rgb(74, 0, 224));
+            color: white;
+         }
+      }
+      .cont-with {
+         line-height: 0.5;
+         text-transform: uppercase;
+         background-color: white;
+         color: #616161;
+         font-size: 0.6em;
+         letter-spacing: 1px;
+      }
+      .divider {
+         width: 80%;
+      }
+      .btn-google {
+         background: linear-gradient(to right, rgb(255, 65, 108), rgb(255, 75, 43));
+         color: white;
+         &:hover {
+            opacity: 0.8;
+            cursor: pointer;
+         }
+      }
+      .overlay {
+         background-color: rgba(255, 255, 255, 0.85);
+         z-index: 11;
+      }
+   }
+}

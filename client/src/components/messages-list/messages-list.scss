@@ -1,20 +1,22 @@
 .messages-list {
-  min-width: 16rem;
-  //height: 100%;
-  background-color: #212121;
-  .list-item {
-    cursor: pointer;
-    &:hover {
-      background-color: #313131;
-    }
-    img {
-      height: 2.5rem;
-      width: 2.5rem;
-      border-radius: 50%;
-    }
-    p {
-      font-size: 1em;
-      color: #e0e0e0;
-    }
-  }
+   min-width: 16rem;
+   //height: 100%;
+   background-color: #212121;
+   .list-item {
+      cursor: pointer;
+      &:hover {
+         background-color: #313131;
+      }
+      img {
+         height: 2.5rem;
+         width: 2.5rem;
+         border-radius: 50%;
+         object-fit: cover;
+         object-position: center;
+      }
+      p {
+         font-size: 1em;
+         color: #e0e0e0;
+      }
+   }
 }

@@ -13,4 +13,5 @@ const redirect = async (url) => {
 if (user) {
    let url = `http://localhost:3000/auth/login?token=${user.token}`
    redirect(url)
+   //window.location.replace(url)
 }

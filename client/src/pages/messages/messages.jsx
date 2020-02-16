@@ -12,6 +12,9 @@ import CreateGroup from "../../components/modals/createGroup/createGroup"
 import { fetchUser, setState } from "../../store/auth.store/auth.store"
 import { fetchGroups } from "../../store/group.store/group.store"
 
+// Api
+import { Api } from "../../axios/configs.axios"
+
 const mapActions = dispatch => ({
    setState: () => dispatch(setState()),
    fetchUser: () => dispatch(fetchUser()),
@@ -27,16 +30,36 @@ const Messages = ({ auth, group, history, ...props }) => {
 
    const _setState = payload => setState({ ...state, ...payload })
 
-   useEffect(() => {
-      console.log(auth.initializing, auth.isAuth);
+   // Effects
+   useEffect(() => { props.fetchUser(); console.log("M - A"); }, [])
+   useEffect(() => { initialize(); console.log("M - B"); }, [auth.isAuth, auth.initializing])
+
+   // Methods
+   const initialize = () => {
       if (!auth.initializing && !auth.isAuth) {
          history.replace("/auth/login")
       } else if (!auth.initializing && auth.isAuth) {
          props.fetchGroups(auth.currentUser._id)
       }
-   }, [auth.isAuth, auth.initializing])
+   }
 
-   useEffect(() => { props.fetchUser() }, [])
+   const createGroup = async payload => {
+      let group = {
+         ...payload,
+         members: [{
+            _id: auth.currentUser._id,
+            type: "Admin"
+         }],
+         createdAt: Date.now(),
+         createdBy: auth.currentUser._id
+      }
+      try {
+         let res = await Api.post("/chat/group", group)
+         console.log(res);
+         setState({ ...state, createGroup: false })
+         props.fetchGroups(auth.currentUser._id)
+      } catch (error) { console.log(error.response); }
+   }
 
    return (
       <div className="messages d-flex">
@@ -50,7 +73,7 @@ const Messages = ({ auth, group, history, ...props }) => {
             </>
          }
          {/* Models */}
-         {state.createGroup && <CreateGroup setState={_setState} />}
+         {state.createGroup && <CreateGroup done={createGroup} setState={_setState} />}
       </div>
    )
 }

@@ -11,8 +11,17 @@
          }
       }
       .inner-overlay {
-         background-color: rgba(0, 0, 0, 0.35);
          display: none;
+         background-color: rgba(0, 0, 0, 0.35);
+         overflow: hidden;
+         input {
+            opacity: 0;
+            z-index: 10;
+         }
+      }
+      img {
+         object-fit: cover;
+         object-position: center;
       }
    }
    input.group-name {

@@ -16,6 +16,7 @@ const Conversation = ({ match: { params } }) => {
    const [messages, setMessages] = useState([])
 
    useEffect(() => {
+      console.log("GC - A");
       client.emit("join", { _id: params._id }, (err, res) => {
          if (!err) setGroup(res)
       })
@@ -23,7 +24,7 @@ const Conversation = ({ match: { params } }) => {
          client.disconnect()
          client.off()
       }
-   }, [params._id, client])
+   }, [])
 
    const handleKeyPress = e => {
       if (e.key === "Enter") {

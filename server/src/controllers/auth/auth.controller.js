@@ -37,12 +37,20 @@ exports.createUser = async (req, res) => {
 }
 
 exports.loginUser = async (condition, password, done) => {
-   let user = await User.findOne(JSON.parse(condition)).select("-__v")
-   if (user) {
-      done(null, user)
-   } else {
-      done(true, null, "User not found!")
+   try {
+      let projection = "-__v -createdAt -updatedAt -lastVisited"
+      let user = await User.findOne(JSON.parse(condition)).select(projection)
+      if (user === null)
+         return done({ error: true, message: "Invalid username or email address" }, null)
+      else if (user && !user.password)
+         return done({ error: true, message: "No password" }, null)
+      else {
+         let valid = bCript.compareSync(password, user.password)
+         if (!valid) return done({ error: true, message: "Invalid password" }, null)
+         else return done(null, user)
+      }
    }
+   catch (error) { return done(error, null) }
 }
 
 exports.onGoogleSignin = async (_, __, profile, done) => {
