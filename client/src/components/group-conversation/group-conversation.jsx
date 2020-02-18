@@ -1,68 +1,107 @@
 import React, { useState, useEffect } from "react"
-import socketio from "socket.io-client"
+import { Api } from "../../axios/configs.axios"
+import io from "socket.io-client"
 
 import "./group-conversation.scss"
 
-const me = "5e4302270006fe08d471c94b"
+// Socket
+var client
 
-const Conversation = ({ match: { params } }) => {
+const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
 
-   const client = socketio("http://localhost:3875/")
    const [group, setGroup] = useState({})
-
    const [message, setMessage] = useState("")
-   const handleChange = e => setMessage(e.target.value)
-
    const [messages, setMessages] = useState([])
 
    useEffect(() => {
+      console.log("USER_ID =>", user._id);
+      rest.activeConversation(_id)
+      fetchGroup()
       console.log("GC - A");
-      client.emit("join", { _id: params._id }, (err, res) => {
-         if (!err) setGroup(res)
+      client = io.connect("http://localhost:3875/")
+      client.emit("join", { group: _id, name: user.name }, res => {
+         console.log("JOIN => ", res);
       })
       return () => {
          client.disconnect()
          client.off()
       }
-   }, [])
+   }, [_id])
 
-   const handleKeyPress = e => {
-      if (e.key === "Enter") {
-         let data = {
-            _id: params._id,
-            message: message,
-            sendBy: me,
-            sendAt: Date.now()
+   useEffect(() => {
+      console.log("GC - B");
+      client.on('message', data => {
+         if (data.sendBy && (data.sendBy !== user._id)) {
+            setMessages([...messages, data])
          }
-         client.emit("message", data, (err, res) => {
-            console.log(err, res);
-         })
+      })
+      scrollToBottom()
+   }, [messages])
 
-         message.trim() !== "" && setMessages([...messages, { text: message, by: "me" }])
-         setMessage('')
+   // Methods
+   const fetchGroup = async () => {
+      try {
+         let group = (await Api.get("/group/" + _id)).data
+         setGroup(group)
+         setMessages(group.messages)
+      }
+      catch (error) { console.log(error) }
+   }
+   const handleChange = ({ target: { value } }) => { setMessage(value) }
+   const handleKeyPress = async e => {
+      if (e.key === "Enter") {
+         if (message.trim() !== "") {
+            let data = {
+               group: _id,
+               message: message,
+               sendBy: user._id,
+               sentAt: Date.now()
+            }
+            setMessages([...messages, data])
+            setMessage('')
+            client.emit("sendSessage", data, res => {
+               console.log(res)
+            })
+         }
+         else setMessage('')
+      }
+   }
+   const scrollToBottom = id => {
+      var div = document.getElementById(id || 'scroll-to-bottom');
+      let toScroll = div.scrollHeight - div.scrollTop
+      div.scrollTop = toScroll <= 1500 ? div.scrollHeight - div.clientHeight : div.scrollTop
+   }
+   const handleScroll = ({ target }) => {
+      if (target.scrollTop == 0) {
+         console.log("fetch more message")
       }
    }
 
-
    return (
-      <div className='w-100 pos-rel'>
-         <div className='toolbar px-10 py-5 elevation-1'>
-            <h2 className='font-normal'>{group.name}</h2>
+      <div className='group-conversation w-100 d-flex fd-col'>
+         <div className='toolbar'>
+            <div className='px-10 py-3 d-flex'>
+               <img className="circle mt-1" src={group.thumbnail} alt="" />
+               <h2 className='group-name font-normal ml-5 mt-2'>{group.name}</h2>
+            </div>
          </div>
-         <div className='conv-container d-flex pa-5'>
-            <div className='w-100 mr-5 pos-rel'>
-               <div className='conversation'>
-                  <div className="conv-child pt-5 pb-5">
-                     {messages.map(({ text, by }, i) => {
-                        return (
-                           <div className='chat w-100'>
-                              <p className={by === 'me' ? 'float-right bg-blue px-4 py-2 text-white' : null} key={i}>{text}</p>
-                           </div>
-                        )
-                     })}
+         <div className='gc-wrapper d-flex'>
+            <div className='w-100 d-flex fd-col'>
+               <div className=' h-100p conversation overflow-hidden'>
+                  <div id='scroll-to-bottom' onScroll={handleScroll} className="hidden-scrollbar pl-5">
+                     {messages.map(({ _id, message, sendBy, sentAt }) => (
+                        <div className='d-flex w-100 my-2' key={_id}>
+                           {sendBy === user._id && <div className="spacer"></div>}
+                           <p style={{ fontSize: '0.8em' }} className='mw-max mr-3 mt-2'>{`${new Date(sentAt).toLocaleTimeString()}`}</p>
+                           {sendBy === user._id
+                              ? <p className='message px-4 py-2 bg-blue text-white mr-5'>{message}</p>
+                              : <p className='message px-4 py-2 bg-grey'>{message}</p>
+                           }
+                        </div>
+                     ))}
                   </div>
                </div>
-               <div className='write-message'>
+               <div className='bottom-message-bar px-5 py-4'>
                   <input
                      onChange={handleChange}
                      onKeyPress={handleKeyPress}
@@ -73,16 +112,20 @@ const Conversation = ({ match: { params } }) => {
                   />
                </div>
             </div>
-            <div className='members-list pa-5 ma-5'>
+
+            <div className='logger'></div>
+            <div className='right-sidebar'></div>
+
+            {/* <div className='members-list pa-5 ma-5'>
                {group.members && group.members.map(member => (
                   <div className='item d-flex mb-3' key={member._id}>
                      <div className='char-thumb pos-rel'>
-                        <p className='pos-abs to-center'>{member.name.charAt(0).toUpperCase()}</p>
+                        <p className='pos-abs to-center'>{member.role}</p>
                      </div>
                      <p className="ml-3">{member.name}</p>
                   </div>
                ))}
-            </div>
+            </div> */}
          </div>
       </div>
    )

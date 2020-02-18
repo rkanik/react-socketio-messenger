@@ -1,7 +1,8 @@
 .sidebar {
    min-width: 18rem;
+   max-width: 18rem;
    height: 100vh;
-   background-color: #212121;
+   background-color: #313131;
    color: white;
    .thumbnail {
       height: 2.6rem;
@@ -12,7 +13,7 @@
       color: #757575;
    }
    .search {
-      background-color: #313131;
+      background-color: #282828;
       border-radius: 2rem;
       input {
          height: 2rem;

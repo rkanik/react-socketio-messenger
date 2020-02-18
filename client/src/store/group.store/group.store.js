@@ -11,14 +11,14 @@ const actions = {
       type: "SET_STATE",
       payload: payloads
    }),
-   fetchGroups: me => (async dispatch => {
+   fetchGroupsList: me => (async dispatch => {
       dispatch(setState({ groupsFetching: true }))
       try {
-         let groups = (await User.get(`/${me}/groups?select=name,thumbnail,members`)).data
+         let groups = (await User.get(`/${me}/groups?select=name,thumbnail`)).data
          dispatch(setState({ groups, groupsFetching: false }))
-         console.log("Groups => ", groups)
+         //console.log("Groups => ", groups)
       } catch (error) {
-         console.log("fetchGroups", error.response)
+         //console.log("fetchGroups", error.response)
          dispatch(setState({ groupsFetching: false }))
       }
    })
@@ -40,6 +40,6 @@ const reducer = (state = initialState(), action) => {
 }
 
 // Exports
-export const fetchGroups = actions.fetchGroups
+export const fetchGroupsList = actions.fetchGroupsList
 export const setState = actions.setState
 export const groupReducer = reducer

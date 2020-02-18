@@ -46,7 +46,7 @@ const Login = ({ history: { replace } }) => {
       if (state.userName.trim() !== "" && state.password.trim() !== "") {
 
       } else {
-         console.log("Empty field");
+        // console.log("Empty field");
       }
    }
 

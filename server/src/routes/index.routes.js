@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 router.use("/auth", require("./auth/auth.router"))
 router.use("/chat", require("./chat/chat.router"))
 router.use("/users", require("./user/user.router"))
+router.use("/group", require("./group/group.router"))
 
 router.get("/", (req, res) => {
    req.user

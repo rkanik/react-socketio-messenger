@@ -5,7 +5,8 @@ const initialState = () => ({
    currentUser: {},
    // booleans
    isAuth: false,
-   initializing: true
+   initializing: true,
+   client: null
 })
 
 const actions = {
@@ -23,8 +24,9 @@ const actions = {
             dispatch(setState({ isAuth: false, initializing: false }))
          }
       } catch (error) {
-         let { status, data } = error.response
-         console.log(status, data.message)
+         console.log(error.response)
+         //let { status, data } = error.response
+         //console.log(status, data.message)
          dispatch(setState({ isAuth: false, initializing: false }))
       }
    })
@@ -32,6 +34,7 @@ const actions = {
 
 const mutations = {
    SET_STATE: (state, payload) => {
+      //console.log("SET_STATE", payload)
       let newState = {}
       Object.keys(payload).forEach(key => newState[key] = payload[key])
       return { ...state, ...newState }

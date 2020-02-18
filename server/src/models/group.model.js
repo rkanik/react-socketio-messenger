@@ -17,6 +17,10 @@ const schema = new mongoose.Schema({
       type: [Message],
       default: [],
    },
+   seenBy: {
+      type: [ObjectId],
+      default: []
+   },
    thumbnail: String,
    createdAt: {
       type: Date,

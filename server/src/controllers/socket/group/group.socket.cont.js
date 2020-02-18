@@ -14,7 +14,6 @@ exports.getGroup = async _id => {
       let group = (await Group.findById(_id))._doc
       group.members = await mapMembersName(group.members)
       return { error: false, data: group }
-
    } catch (err) {
       return { error: true, data: err }
    }

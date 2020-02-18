@@ -13,13 +13,14 @@ exports.getUser = async (req, res) => {
    res.status(404).json({ error: true, message: "There is no user with this id" })
 }
 
-exports.getGroups = (req, res) => {
-
-   let projection = req.query.select
-      ? req.query.select.replace(/,/g, " ")
-      : ""
-   Group.find({ 'members._id': req.params._id }, projection, (err, docs) => {
-      if (err) res.send(err)
-      else res.json(docs)
-   })
+exports.getGroups = async (req, res) => {
+   let projection = {}
+   req.query.select && req.query.select.split(',').forEach(s => { projection[s] = 1 })
+   try {
+      let groups = await Group.find(
+         { 'members._id': req.params._id },
+         { ...projection, messages: { $slice: -1 } }
+      )
+      res.json(groups)
+   } catch (error) { res.status(500).json({ error: true, message: "Error fetching groups" }) }
 }

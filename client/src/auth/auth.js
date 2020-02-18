@@ -9,7 +9,7 @@ export const ensureLogin = async () => {
       // })
 
       let user = (await Api.get()).data
-      console.log(user)
+      //console.log(user)
    } catch (error) {
       console.log(error.response)
    }

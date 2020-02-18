@@ -4,11 +4,11 @@ import "./sidebar.scss"
 // Components
 import MessagesList from "../../components/messages-list/messages-list"
 
-const Sidebar = ({ items, user, setState }) => {
+const Sidebar = ({ items, user, setState, activeConversation }) => {
    return (
       <div className="sidebar pos-rel">
-         <div className="pa-5 d-flex">
-            <img className="thumbnail circle" src={user && user.thumbnail ? user.thumbnail : ""} />
+         <div className="px-5 py-4 d-flex">
+            <img className="thumbnail circle" src={user && user.thumbnail ? user.thumbnail : ""} alt="" />
             <div className="ml-5 mw-max">
                <h3 className="font-normal">{user && user.name}</h3>
                <p className="username">{user && user.userName}</p>
@@ -24,7 +24,7 @@ const Sidebar = ({ items, user, setState }) => {
                <input className="px-5 w-100" type="text" placeholder="Search" />
             </div>
          </div>
-         <MessagesList items={items} />
+         <MessagesList items={items} userId={user._id} activeItem={activeConversation} />
       </div>
    );
 }
