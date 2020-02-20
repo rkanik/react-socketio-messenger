@@ -6,7 +6,7 @@ import "./messages.scss"
 
 // Components
 import Sidebar from "../../layouts/sidebar/sidebar"
-import Conversation from "../../components/group-conversation/group-conversation"
+import Conversation from "../../components/group-conversation/conversation.g"
 import CreateGroup from "../../components/modals/createGroup/createGroup"
 
 // Store

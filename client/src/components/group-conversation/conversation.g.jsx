@@ -2,7 +2,11 @@ import React, { useState, useEffect } from "react"
 import { Api } from "../../axios/configs.axios"
 import io from "socket.io-client"
 
-import "./group-conversation.scss"
+import "./_conversation.g.scss"
+
+// Components
+import Messages from "./messages.g"
+import RightBar from "../rightbar/rightbar"
 
 // Socket
 var client
@@ -32,6 +36,7 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
       console.log("GC - B");
       client.on('message', data => {
          if (data.sendBy && (data.sendBy !== user._id)) {
+            data = { ...data, ...userDetails(data.sendBy) }
             setMessages([...messages, data])
          }
       })
@@ -39,15 +44,28 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
    }, [messages])
 
    // Methods
+   const handleChange = ({ target: { value } }) => { setMessage(value) }
    const fetchGroup = async () => {
+      console.log("fetchGroup");
       try {
-         let group = (await Api.get("/group/" + _id)).data
+         let group = (await Api.get(`/group/${_id}?with_user=true`)).data
          setGroup(group)
+         let currentSendBy = null
+         group.messages = group.messages.map(message => {
+            if (message.sendBy === user._id) currentSendBy = null
+            if (message.sendBy === user._id || currentSendBy === message.sendBy) return message
+            let member = group.members.find(member => member._id === message.sendBy)
+            currentSendBy = message.sendBy
+            return member ? {
+               ...message,
+               userName: member.userName,
+               thumbnail: member.thumbnail
+            } : message
+         })
          setMessages(group.messages)
       }
       catch (error) { console.log(error) }
    }
-   const handleChange = ({ target: { value } }) => { setMessage(value) }
    const handleKeyPress = async e => {
       if (e.key === "Enter") {
          if (message.trim() !== "") {
@@ -76,6 +94,12 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
          console.log("fetch more message")
       }
    }
+   const userDetails = id => {
+      console.log(id)
+      let user = id && group.members ? group.members.find(user => user._id === id) : null
+      console.log(user)
+      return user ? { userName: user.userName, thumbnail: user.thumbnail } : {}
+   }
 
    return (
       <div className='group-conversation w-100 d-flex fd-col'>
@@ -89,16 +113,7 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
             <div className='w-100 d-flex fd-col'>
                <div className=' h-100p conversation overflow-hidden'>
                   <div id='scroll-to-bottom' onScroll={handleScroll} className="hidden-scrollbar pl-5">
-                     {messages.map(({ _id, message, sendBy, sentAt }) => (
-                        <div className='d-flex w-100 my-2' key={_id}>
-                           {sendBy === user._id && <div className="spacer"></div>}
-                           <p style={{ fontSize: '0.8em' }} className='mw-max mr-3 mt-2'>{`${new Date(sentAt).toLocaleTimeString()}`}</p>
-                           {sendBy === user._id
-                              ? <p className='message px-4 py-2 bg-blue text-white mr-5'>{message}</p>
-                              : <p className='message px-4 py-2 bg-grey'>{message}</p>
-                           }
-                        </div>
-                     ))}
+                     <Messages messages={messages} userId={user._id} />
                   </div>
                </div>
                <div className='bottom-message-bar px-5 py-4'>
@@ -112,20 +127,8 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
                   />
                </div>
             </div>
-
             <div className='logger'></div>
-            <div className='right-sidebar'></div>
-
-            {/* <div className='members-list pa-5 ma-5'>
-               {group.members && group.members.map(member => (
-                  <div className='item d-flex mb-3' key={member._id}>
-                     <div className='char-thumb pos-rel'>
-                        <p className='pos-abs to-center'>{member.role}</p>
-                     </div>
-                     <p className="ml-3">{member.name}</p>
-                  </div>
-               ))}
-            </div> */}
+            <RightBar />
          </div>
       </div>
    )
