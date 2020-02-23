@@ -1,7 +1,26 @@
-const router = require("express").Router()
-const { Group, User } = require("../../models")
+const groupsRouter = require("express").Router()
+const groupRouter = require("express").Router()
+const Group = require("../models/groups.model")
+const User = require("../models/users.model")
 
-router.route("/:_id")
+// Controllers
+const GroupController = require("../controllers/group.controller")
+
+groupsRouter.route("/")
+   .get(GroupController.GET_GROUPS)
+   .post(GroupController.CREATE_GROUP)
+   .delete(GroupController.DELETE_GROUPS)
+
+groupRouter.route("/:groupId")
+   .get(GroupController.GET_GROUP)
+   .patch(GroupController.UPDATE_GROUP)
+   .delete(GroupController.DELETE_GROUP)
+
+groupRouter.route("/:groupId/members")
+   .get(GroupController.GET_GROUP_MEMBERS)
+   .post(GroupController.ADD_GROUP_MEMBER)
+
+groupRouter.route("/:_id")
    .get(async (req, res) => {
       try {
          let withUserDetails = req.query.with_user || null
@@ -20,7 +39,7 @@ router.route("/:_id")
       catch (error) { res.status(500).json({ error: true, message: error.message }) }
    })
 
-router.get("/:_id/messages/:length", async (req, res) => {
+groupRouter.get("/:_id/messages/:length", async (req, res) => {
    try {
       let group = (await Group.findById(
          req.params._id, { messages: { $slice: -req.params.length }, __v: 0 }
@@ -30,4 +49,4 @@ router.get("/:_id/messages/:length", async (req, res) => {
    catch (error) { res.status(500).json({ error: true, message: error.message }) }
 })
 
-module.exports = router
+module.exports = { groupsRouter, groupRouter }

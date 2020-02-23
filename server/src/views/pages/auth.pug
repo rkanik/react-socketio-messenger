@@ -6,8 +6,8 @@ html(lang="en")
       link(rel="stylesheet" type="text/css" href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css")
       title Authentication
       style
-         include pug.auth.css
-         
+         include ./css/auth.pug.css
+
    body
       if(user)
          .card.rounded.overflow-hidden.mx-auto.border.border-green-400.bg-white.rounded-b.mt-6.absolute.to-center
@@ -32,4 +32,4 @@ html(lang="en")
       script.
          const user = !{JSON.stringify(user)}
    script  
-      include pug.auth.js
+      include ./js/auth.pug.js

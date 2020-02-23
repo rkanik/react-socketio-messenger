@@ -1,24 +1,22 @@
 const mongoose = require('mongoose')
-const { Message, GroupMember } = require("./schema")
-const { ObjectId } = mongoose.SchemaTypes
 
-const schema = new mongoose.Schema({
+// Schema
+const ObjectId = mongoose.SchemaTypes.ObjectId
+const GroupMember = require("./member.schema")
+const Message = require("./message.schema")
+
+const Group = new mongoose.Schema({
    name: {
       type: String,
       required: true,
    },
+   description: String,
    members: {
       type: [GroupMember],
-      validate: {
-         validator: me => me.length > 0
-      }
+      validate: { validator: me => me.length > 0 }
    },
    messages: {
       type: [Message],
-      default: [],
-   },
-   seenBy: {
-      type: [ObjectId],
       default: []
    },
    thumbnail: String,
@@ -31,7 +29,5 @@ const schema = new mongoose.Schema({
       required: true
    }
 })
-
-const Group = mongoose.model('groups', schema)
 
 module.exports = Group

@@ -13,6 +13,9 @@ var client
 
 const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
 
+   const [state] = useState({
+      rightBarActive: null
+   })
    const [group, setGroup] = useState({})
    const [message, setMessage] = useState("")
    const [messages, setMessages] = useState([])
@@ -23,21 +26,31 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
       fetchGroup()
       console.log("GC - A");
       client = io.connect("http://localhost:3875/")
-      client.emit("join", { group: _id, name: user.name }, res => {
+
+      client.emit("join", { group: _id, name: user.name, id: user._id }, res => {
          console.log("JOIN => ", res);
       })
+
+      scrollToBottom()
+
       return () => {
          client.disconnect()
          client.off()
       }
-   }, [_id])
 
+   }, [_id])
    useEffect(() => {
       console.log("GC - B");
       client.on('message', data => {
          if (data.sendBy && (data.sendBy !== user._id)) {
             data = { ...data, ...userDetails(data.sendBy) }
             setMessages([...messages, data])
+         }
+      })
+      client.on('join', data => {
+         if (group.members && group.members.length > 1) {
+            let nMember = group.members.map(m => (m._id === data.id ? { ...m, active: true } : m))
+            setGroup({ ...group, members: nMember })
          }
       })
       scrollToBottom()
@@ -49,6 +62,7 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
       console.log("fetchGroup");
       try {
          let group = (await Api.get(`/group/${_id}?with_user=true`)).data
+         console.log(group.members);
          setGroup(group)
          let currentSendBy = null
          group.messages = group.messages.map(message => {
@@ -95,9 +109,7 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
       }
    }
    const userDetails = id => {
-      console.log(id)
       let user = id && group.members ? group.members.find(user => user._id === id) : null
-      console.log(user)
       return user ? { userName: user.userName, thumbnail: user.thumbnail } : {}
    }
 
@@ -106,17 +118,20 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
          <div className='toolbar'>
             <div className='px-10 py-3 d-flex'>
                <img className="circle mt-1" src={group.thumbnail} alt="" />
-               <h2 className='group-name font-normal ml-5 mt-2'>{group.name}</h2>
+               <h2 className='group-name mw-max font-normal ml-5 mt-2'>{group.name}</h2>
+               <div className="spacer"></div>
+
             </div>
          </div>
          <div className='gc-wrapper d-flex'>
             <div className='w-100 d-flex fd-col'>
-               <div className=' h-100p conversation overflow-hidden'>
+               <div className='h-100p conversation overflow-hidden'>
                   <div id='scroll-to-bottom' onScroll={handleScroll} className="hidden-scrollbar pl-5">
                      <Messages messages={messages} userId={user._id} />
                   </div>
                </div>
-               <div className='bottom-message-bar px-5 py-4'>
+               <div className='bottom-message-bar d-flex px-5 py-4'>
+                  <i className="icon-btn-3 to-center-before circle pointer pos-rel mr-3 fal fa-image" />
                   <input
                      onChange={handleChange}
                      onKeyPress={handleKeyPress}
@@ -127,8 +142,7 @@ const Conversation = ({ match: { params: { _id } }, user, ...rest }) => {
                   />
                </div>
             </div>
-            <div className='logger'></div>
-            <RightBar />
+            <RightBar _id={user._id} members={group.members} activeP={state.rightBarActive} />
          </div>
       </div>
    )

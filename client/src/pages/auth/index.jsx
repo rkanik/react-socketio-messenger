@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
-import auth from "../../auth/auth"
+import React from 'react';
 
-const Auth = ({ history }) => {
-   useEffect(() => {
-      //console.log("I - A");
-      auth.isAuth
-         ? history.replace("/messages")
-         : history.replace("/auth/login")
-   })
-   return <></>
+const Auth = () => {
+   // useEffect(() => {
+   //    auth.isAuth
+   //       ? history.replace("/messages")
+   //       : history.replace("/auth/login")
+   // })
+   return <><p>Auth</p></>
 }
 export default Auth;

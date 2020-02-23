@@ -1,7 +1,9 @@
 const mongoose = require('mongoose')
-const { ObjectId } = mongoose.SchemaTypes
 
-const schema = new mongoose.Schema({
+// Schema
+const ObjectId = mongoose.SchemaTypes.ObjectId
+
+const User = new mongoose.Schema({
    name: {
       type: String,
       required: true
@@ -15,6 +17,17 @@ const schema = new mongoose.Schema({
       required: true,
       match: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
    },
+   status: {
+      clientId: String,
+      active: {
+         type: Boolean,
+         default: false
+      },
+      lastActive: {
+         type: Date,
+         default: Date.now
+      }
+   },
    emailVerified: {
       type: Boolean,
       default: false
@@ -27,18 +40,13 @@ const schema = new mongoose.Schema({
    groups: [ObjectId],
    createdAt: {
       type: Date,
-      default: Date.now()
+      default: Date.now(),
+      select: false
    },
    updatedAt: {
       type: Date,
       default: Date.now()
    },
-   lastVisited: {
-      type: Date,
-      default: Date.now()
-   }
 })
 
-const user = mongoose.model('users', schema)
-
-module.exports = user
+module.exports = User

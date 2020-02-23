@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import auth from "../../auth/auth"
 import queryString from 'query-string'
 import logo from "../../assets/images/logo_64.png"
 import "./scss/login.scss"
@@ -16,7 +15,7 @@ const Login = ({ history: { replace } }) => {
    })
 
    // Effects
-   useEffect(() => { initialize() }, [])
+   useEffect(() => { initialize() })
 
 
    const wait = () => new Promise(r => { setTimeout(() => { r() }, 1000) })

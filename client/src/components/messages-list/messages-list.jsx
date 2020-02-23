@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react'
 import { useHistory } from "react-router-dom"
+import moment from "moment"
 import "./messages-list.scss"
 
 const MessagesList = ({ items, userId, activeItem }) => {
@@ -14,7 +15,7 @@ const MessagesList = ({ items, userId, activeItem }) => {
    }
 
    return (
-      <div className='messages-list w-100 text-white pt-5'>{
+      <div className='messages-list h-100p text-white'>{
          items.map(({ _id, name, thumbnail, messages }) => (
             <div
                onClick={() => onClickListItem(_id)}
@@ -26,7 +27,14 @@ const MessagesList = ({ items, userId, activeItem }) => {
                   <div className='d-flex mb-1'>
                      <p className='title mw-max'>{name}</p>
                      <div className="spacer"></div>
-                     <p className="time mw-max mt-1">{messages.length > 0 && new Date(messages[0].sentAt).toLocaleTimeString()}</p>
+                     <p className="time mw-max mt-1">
+                        {messages.length > 0
+                           ? Date.now() - new Date(messages[0].sentAt).getTime() <= 8600000
+                              ? moment(messages[0].sentAt).format('LT')
+                              : moment(messages[0].sentAt).format('L')
+                           : ''
+                        }
+                     </p>
                   </div>
                   <div>{
                      messages.length > 0

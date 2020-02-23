@@ -1,6 +1,6 @@
 
-const { Group } = require("../../models")
-const { User } = require("../../models")
+const Group = require("../models/groups.model")
+const User = require("../models/users.model")
 
 exports.getUser = async (req, res) => {
 

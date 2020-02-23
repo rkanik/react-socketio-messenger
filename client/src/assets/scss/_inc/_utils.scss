@@ -115,7 +115,9 @@ $elevation_transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
    position: fixed !important;
 }
 
+.to-center-before::before,
 .to-center {
+   position: absolute;
    top: 50%;
    left: 50%;
    transform: translate(-50%, -50%);

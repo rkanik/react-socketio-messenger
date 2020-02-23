@@ -8,6 +8,7 @@ const cors = require('cors')
 const session = require("express-session")
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const { handleError } = require("../helpers/error")
 
 // Setting up passport
 require("../passport/index.passport")(passport)
@@ -36,6 +37,8 @@ app
    .use(passport.session())
 
    .use(router)
+
+   .use((err, _, res, __) => { handleError(err, res) })
 
 // Exporting app 
 module.exports = app

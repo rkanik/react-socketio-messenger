@@ -1,6 +1,6 @@
 const router = require("express").Router()
 
-const { createGroup, addMember } = require("../../controllers/chat/chat.controller")
+const { createGroup, addMember } = require("../controllers/chat.controller")
 
 router.route("/group")
    .post(createGroup)

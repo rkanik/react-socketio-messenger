@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const passport = require('passport')
-const { auth } = require('../../controllers')
+const auth = require('../controllers/auth.controller')
 
 router.get("/", (req, res) => {
    req.user ? res.render("pages/auth", { user: req.user }) : res.redirect("/")

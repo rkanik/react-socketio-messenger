@@ -1,6 +1,6 @@
 /** Strategies */
 const strategies = require("./strategies.passport")
-const { User } = require("../models/index")
+const Users = require("../models/users.model")
 const jwt = require("jsonwebtoken")
 
 module.exports = passport => {
@@ -12,7 +12,7 @@ module.exports = passport => {
 
    passport.deserializeUser(async (_id, done) => {
       try {
-         let user = await User.findById(_id).select("-__v -createdAt -updatedAt")
+         let user = await Users.findById(_id).select("-__v -createdAt -updatedAt")
          let token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET)
          return user ? done(null, { ...user._doc, token }) : done({ code: 404, message: "User not found" }, null)
       } catch (error) { done(error, null) }

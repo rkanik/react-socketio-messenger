@@ -10,7 +10,9 @@
       img {
          height: 2.5rem;
          width: 2.5rem;
-         min-width: 2rem;
+         min-width: 2.5rem;
+         object-fit: cover;
+         object-position: center;
       }
    }
    .gc-wrapper {
@@ -24,11 +26,5 @@
             color: #e0e0e0;
          }
       }
-      .logger {
-         width: 12rem;
-         background-color: #202020;
-      }
-      
    }
 }
-

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Route } from "react-router-dom"
 import { connect } from "react-redux"
-import socketio from "socket.io-client"
+import io from "socket.io-client"
 import "./messages.scss"
 
 // Components
@@ -36,9 +36,17 @@ const Messages = ({ auth, group, history, ...props }) => {
    const _setState = payload => setState({ ...state, ...payload })
 
    // Effects
-   useEffect(() => { client = socketio("http://localhost:3875/") }, [])
-   useEffect(() => { props.fetchUser(); console.log("M - A"); }, [])
-   useEffect(() => { initialize(); console.log("M - B"); }, [auth.isAuth, auth.initializing])
+
+   useEffect(() => {
+      console.log("M - A");
+      client = io.connect("http://localhost:3875/")
+      client.on('connected', res => {
+         console.log("CONNECTED", res);
+      })
+   }, [])
+
+   useEffect(() => { props.fetchUser(); console.log("M - B"); }, [])
+   useEffect(() => { initialize(); console.log("M - C"); }, [auth.isAuth, auth.initializing])
 
    // Methods
    const initialize = () => {

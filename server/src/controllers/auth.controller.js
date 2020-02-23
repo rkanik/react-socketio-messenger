@@ -1,10 +1,9 @@
-const { User } = require("../../models")
+const Users  = require("../models/users.model")
 const bCript = require('bcryptjs')
 
-
 exports.createUser = async (req, res) => {
-   await User.init()
-   let user = new User({
+   await Users.init()
+   let user = new Users({
       ...req.body,
       userName: req.body.userName.toLowerCase(),
       email: req.body.email.toLowerCase()
@@ -39,7 +38,7 @@ exports.createUser = async (req, res) => {
 exports.loginUser = async (condition, password, done) => {
    try {
       let projection = "-__v -createdAt -updatedAt -lastVisited"
-      let user = await User.findOne(JSON.parse(condition)).select(projection)
+      let user = await Users.findOne(JSON.parse(condition)).select(projection)
       if (user === null)
          return done({ error: true, message: "Invalid username or email address" }, null)
       else if (user && !user.password)
@@ -55,12 +54,12 @@ exports.loginUser = async (condition, password, done) => {
 
 exports.onGoogleSignin = async (_, __, profile, done) => {
 
-   let existUser = await User.findOne({ email: profile._json.email }).select("-__v")
+   let existUser = await Users.findOne({ email: profile._json.email }).select("-__v")
 
    if (existUser) {
       //let token = jwt.sign({ _id: existUser._id }, process.env.JWT_SECRET)
       //console.log(token)
-      User.updateOne({ _id: existUser._id }, { lastVisited: Date.now() })
+      Users.updateOne({ _id: existUser._id }, { lastVisited: Date.now() })
       return done(null, existUser._doc, "User already exist!")
    }
 
