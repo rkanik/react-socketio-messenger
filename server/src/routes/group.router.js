@@ -20,6 +20,17 @@ groupRouter.route("/:groupId/members")
    .get(GroupController.GET_GROUP_MEMBERS)
    .post(GroupController.ADD_GROUP_MEMBER)
 
+groupRouter.route("/:groupId/member/:userId")
+   .patch(GroupController.UPDATE_GROUP_MEMBER)
+   .delete(GroupController.DELETE_GROUP_MEMBER)
+
+groupRouter.route("/:groupId/messages")
+   .get(GroupController.GET_GROUP_MESSAGES)
+   .post(GroupController.ADD_GROUP_MESSAGE)
+
+groupRouter.route("/:groupId/message/:msgId")
+   .delete(GroupController.DELETE_GROUP_MESSAGE)
+
 groupRouter.route("/:_id")
    .get(async (req, res) => {
       try {

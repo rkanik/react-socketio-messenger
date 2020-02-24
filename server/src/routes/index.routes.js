@@ -4,9 +4,18 @@ const { ErrorHandler } = require("../helpers/error")
 
 // router.use("/auth", require("./auth.router"))
 // router.use("/chat", require("./chat.router"))
-router.use("/users", require("./user.router"))
-router.use("/api/groups", require("./group.router").groupsRouter)
-router.use("/api/group", require("./group.router").groupRouter)
+
+// routers
+const { userRouter, usersRouter } = require("./user.router")
+const { groupRouter, groupsRouter } = require("./group.router")
+
+// User routers
+router.use("/api/users", usersRouter)
+router.use("/api/user", userRouter)
+
+// Group routers
+router.use("/api/:userId/groups", groupsRouter)
+router.use("/api/:userId/group", groupRouter)
 
 router.get("/", (req, res) => {
    req.user
