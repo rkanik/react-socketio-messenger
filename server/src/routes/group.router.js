@@ -11,6 +11,8 @@ groupsRouter.route("/")
    .post(GroupController.CREATE_GROUP)
    .delete(GroupController.DELETE_GROUPS)
 
+groupsRouter.get("/groupList", GroupController.GET_GROUPS_LIST)
+
 groupRouter.route("/:groupId")
    .get(GroupController.GET_GROUP)
    .patch(GroupController.UPDATE_GROUP)

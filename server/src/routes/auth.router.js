@@ -2,16 +2,16 @@ const router = require('express').Router()
 const passport = require('passport')
 const auth = require('../controllers/auth.controller')
 
-router.get("/", (req, res) => {
+router.get("/api/", (req, res) => {
    req.user ? res.render("pages/auth", { user: req.user }) : res.redirect("/")
 })
 
-router.get("/login", (req, res) => {
+router.get("/api/login", (req, res) => {
    res.status(200).json({ from: "/login" })
 })
 
 // Login
-router.post('/login', (req, res, next) => {
+router.post('/api/login', (req, res, next) => {
    req.body.username = JSON.stringify({ $or: [{ userName: req.body.username }, { email: req.body.username }] })
    passport.authenticate('local')(req, res, next);
 }, (req, res) => {
@@ -24,9 +24,9 @@ router.post('/login', (req, res, next) => {
    }
 });
 
-router.post("/register", auth.createUser)
+router.post("/api/register", auth.regiterUser)
 
-router.get(`/google`, passport.authenticate('google'))
-router.get(`/google/callback`, passport.authenticate('google', { successRedirect: "/auth" }))
+router.get(`/api/google`, passport.authenticate('google'))
+router.get(`/api/google/callback`, passport.authenticate('google', { successRedirect: "/auth" }))
 
 module.exports = router

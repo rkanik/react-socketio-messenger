@@ -1,42 +1,88 @@
-
+'use strict'
 // Models
-const Groups = require("../models/groups.model")
 const Users = require("../models/users.model")
+
 // Schema
 const ObjectId = require("mongoose").Types.ObjectId
-const { ErrorHandler } = require("../helpers/error")
+const FriendRequest = require("../models/joi/friendRequest")
+const Friend = require("../models/joi/friend.joi")
+
+// Error handlers
+const { CError } = require("../helpers/error")
+
 // Status codes
-const { NOT_FOUND, CONFLICT, BAD_REQUEST, INTERNAL_SERVER_ERROR }
-   = require("../helpers/http.status")
+const {  BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
 
-// Handler
+// Request Handlers
 const { REQUEST_HANDLER } = require("./request.handler")
+const { createChat } = require("./chat.controller")
 
-
-// exports.getUser = async (req, res) => {
-//    if (!req.body._id) return req.status(400).json({ error: true, message: "There is no object id in body" })
-//    let user = await Users.findById(req.body._id).select("name userName email thumbnail")
-//    if (user) return res.status(200).json(user)
-//    res.status(404).json({ error: true, message: "There is no user with this id" })
-// }
-
-exports.getGroups = async (req, res) => {
-   let projection = {}
-   req.query.select && req.query.select.split(',').forEach(s => { projection[s] = 1 })
-   try {
-      let groups = await Groups.find(
-         { 'members._id': req.params._id },
-         { ...projection, messages: { $slice: -1 } }
-      )
-      res.json(groups)
-   } catch (error) { res.status(500).json({ error: true, message: "Error fetching groups" }) }
-}
 
 const getUser = userId => {
-   return { data: { userId, msg: "I am here" } }
+   return { data: { userId, msg: "I am here get user" } }
+}
+
+const addFriendRequest = async (userId, request) => {
+   try {
+      // Checking userId and frined's userId
+      if (!ObjectId.isValid(userId) || !ObjectId.isValid(request && request.userId))
+         throw new CError(BAD_REQUEST, 'UserId or FriendId is not a valid ObjectId')
+
+      // Checking if friend data is valid
+      let { error } = FriendRequest.validate(request)
+      if (error) throw new CError(BAD_REQUEST, error.message)
+      // Pushing friend request
+      let resp = await Users.updateOne(
+         { _id: userId },
+         { $push: { friendRequests: request } }
+      )
+      // If request not pushed
+      if (resp.nModified === 0)
+         throw new CError(INTERNAL_SERVER_ERROR, "Error pushing friend request")
+      // returning
+      return { data: resp }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
+
+const acceptFriendRequest = async (userId, request) => {
+   try {
+      // Checking userId and frined's userId
+      if (!ObjectId.isValid(userId) || !ObjectId.isValid(request.userId))
+         throw new CError(BAD_REQUEST, 'UserId or FriendId is not a valid ObjectId')
+
+      let { error } = Friend.validate(request)
+      if (error) throw new CError(BAD_REQUEST, "Friend validation failed")
+
+      let resp = await Users.updateOne({ _id: userId }, { $push: { friends: request } })
+      if (resp.nModified === 0) throw new CError(INTERNAL_SERVER_ERROR, "Error while accepting friend request")
+
+      let pulled = await Users.updateOne({ _id: userId }, { $pull: { friendRequests: { userId: request.userId } } })
+
+      if (pulled.nModified === 0) {
+         await Users.updateOne({ _id: userId }, { $pull: { friends: { userId: request.userId } } })
+         throw new CError(BAD_REQUEST, "Friend request not available in the request list")
+      }
+
+      // Creating chat
+      let chatRes = await createChat(userId, request.userId, { createdAt: request.addedAt })
+      if (chatRes.error) throw new CError(chatRes.errorCode, chatRes.message)
+
+      return { data: resp }
+
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
 
 // GET REQUESTS
 exports.GET_USER = ({ params: { userId } }, res, nxt) => {
    REQUEST_HANDLER(res, nxt, getUser, [userId])
+}
+
+exports.SEND_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
+   REQUEST_HANDLER(res, next, addFriendRequest, [userId, body])
+}
+
+exports.ACCEPT_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
+   REQUEST_HANDLER(res, next, acceptFriendRequest, [userId, body])
 }

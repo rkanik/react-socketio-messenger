@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 // Schema
 const ObjectId = mongoose.SchemaTypes.ObjectId
-const Message = require("./schema/message.schema")
+const Message = require("./message.schema")
 
 const Chat = new mongoose.Schema({
    users: [ObjectId, ObjectId],

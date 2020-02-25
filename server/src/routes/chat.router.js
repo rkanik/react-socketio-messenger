@@ -1,11 +1,24 @@
-const router = require("express").Router()
+'use strict';
 
-const { createGroup, addMember } = require("../controllers/chat.controller")
+const Router = require('express').Router
+const chatsRouter = Router()
+const chatRouter = Router()
+const chatsController = require("../controllers/chat.controller")
 
-router.route("/group")
-   .post(createGroup)
+chatsRouter.route("/")
+   //.get(getChats)
+   .post(chatsController.CREATE_CHAT)
 
-router.route("/group/member")
-   .post(addMember)
+chatsRouter.route("/list")
+//.get(getChatsList)
 
-module.exports = router
+chatRouter.route("/:frndId")
+// .get(getChat)
+// .patch(updateChat)
+// .delete(deleteChat)
+
+chatRouter.route("/:frndId/message")
+   .post(chatsController)
+
+module.exports = chatsRouter
+module.exports = chatRouter

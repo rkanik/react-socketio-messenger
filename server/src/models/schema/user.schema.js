@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 
 // Schema
 const ObjectId = mongoose.SchemaTypes.ObjectId
+const Friend = require("../schema/friend.schema")
+const FriendRequest = require("../schema/friendRequest.schema")
 
 const User = new mongoose.Schema({
    name: {
@@ -36,8 +38,12 @@ const User = new mongoose.Schema({
    thumbnail: String,
    externalId: String,
    provider: String,
-   friends: [ObjectId],
+   friends: [Friend],
    groups: [ObjectId],
+   friendRequests: {
+      type: [FriendRequest],
+      default: []
+   },
    createdAt: {
       type: Date,
       default: Date.now(),
@@ -46,7 +52,7 @@ const User = new mongoose.Schema({
    updatedAt: {
       type: Date,
       default: Date.now()
-   },
+   }
 })
 
 module.exports = User

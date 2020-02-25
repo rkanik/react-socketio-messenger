@@ -1,8 +1,17 @@
+'use strict'
+
 class ErrorHandler extends Error {
    constructor(statusCode, message) {
       super();
-      console.log("ErrorHandler", statusCode, message)
       this.statusCode = statusCode;
+      this.message = message;
+   }
+}
+
+class CError extends Error {
+   constructor(errorCode, message) {
+      super();
+      this.errorCode = errorCode;
       this.message = message;
    }
 }
@@ -18,5 +27,6 @@ const handleError = (err, res) => {
 
 module.exports = {
    ErrorHandler,
-   handleError
+   handleError,
+   CError
 }

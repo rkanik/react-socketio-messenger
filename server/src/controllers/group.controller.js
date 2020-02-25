@@ -18,6 +18,7 @@ const {
 const { REQUEST_HANDLER } = require("./request.handler")
 
 const getGroupsList = async userId => {
+   console.log(userId)
    if (!userId || !ObjectId.isValid(userId)) return {
       error: true,
       errorCode: BAD_REQUEST,
@@ -345,6 +346,7 @@ exports.GET_GROUPS = async ({ params: { groupId } }, res, next) => {
    REQUEST_HANDLER(res, next, getGroup, [groupId])
 }
 exports.GET_GROUPS_LIST = async ({ params: { userId } }, res, next) => {
+   console.log(userId)
    REQUEST_HANDLER(res, next, getGroupsList, [userId])
 }
 exports.GET_GROUP = async (req, res, next) => {
