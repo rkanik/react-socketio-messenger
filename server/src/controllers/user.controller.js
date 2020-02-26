@@ -1,6 +1,8 @@
 'use strict'
 // Models
 const Users = require("../models/users.model")
+const Groups = require("../models/groups.model")
+const Chats = require("../models/chats.model")
 
 // Schema
 const ObjectId = require("mongoose").Types.ObjectId
@@ -11,15 +13,79 @@ const Friend = require("../models/joi/friend.joi")
 const { CError } = require("../helpers/error")
 
 // Status codes
-const {  BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
+const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
 
 // Request Handlers
 const { REQUEST_HANDLER } = require("./request.handler")
 const { createChat } = require("./chat.controller")
 
+const getUser = async userId => {
+   try {
+      let user = await Users.findById(userId).select("-__v -friends -friendRequests")
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
+const getFriend = async frndId => {
+   try {
+      let friend = await Users.findById(frndId).select("name email userName status thumbnail")
+      if (!friend) throw new CError(BAD_REQUEST, "Friend not found")
+      return { data: friend }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
+const getFriendsList = async userId => {
+   try {
+      let limit = 100;
+      let user = await Users.findById(userId, { friends: { $slice: -limit } })
+      if (!user) throw new CError(BAD_REQUEST, "User not found")
+      let friends = (user && user.friends) ? await Promise.all(user.friends.map(async friend => {
+         return await Users.findById(friend.userId).select("name email userName thumbnail status")
+      })) : []
+      return { data: friends }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
+const getFriendsRequestList = async userId => {
+   try {
+      let limit = 100;
+      let user = await Users.findById(userId, { friendRequests: { $slice: -limit } })
+      if (!user) throw new CError(BAD_REQUEST, "User not found")
+      let friendRequests = (user && user.friendRequests) ? await Promise.all(user.friendRequests.map(async request => {
+         return await Users.findById(request.userId).select("name email userName thumbnail status")
+      })) : []
+      return { data: friendRequests }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
 
-const getUser = userId => {
-   return { data: { userId, msg: "I am here get user" } }
+const getConversations = async (userId, { limit, page }) => {
+   try {
+
+      let l = limit || 20, p = page || 1
+
+      let projection = { messages: { $slice: -1 }, members: 0, __v: 0, createdAt: 0 }
+      let groups = await Groups
+         .find({ "members.userId": userId }, projection)
+         .sort({ "messages.sentAt": -1 })
+         .limit((l / 2) * p) || []
+
+      delete projection.members
+
+      let chats = await Chats
+         .find({ users: userId }, projection)
+         .sort({ 'message.sentAt': -1 })
+         .limit((l / 2) * p) || []
+
+      if (!chats) throw new CError(BAD_REQUEST, "Chats not found")
+
+      let conversations = groups.concat(chats).sort((a, b) => b.messages[0].sentAt - a.messages[0].sentAt)
+
+      return { data: conversations }
+   }
+   catch (err) {
+      console.log(err.message)
+      return { error: true, errorCode: err.errorCode, message: err.message }
+   }
 }
 
 const addFriendRequest = async (userId, request) => {
@@ -44,7 +110,6 @@ const addFriendRequest = async (userId, request) => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
-
 const acceptFriendRequest = async (userId, request) => {
    try {
       // Checking userId and frined's userId
@@ -78,11 +143,21 @@ const acceptFriendRequest = async (userId, request) => {
 exports.GET_USER = ({ params: { userId } }, res, nxt) => {
    REQUEST_HANDLER(res, nxt, getUser, [userId])
 }
-
+exports.GET_FRIEND = ({ params: { frndId } }, res, next) => {
+   REQUEST_HANDLER(res, next, getFriend, [frndId])
+}
+exports.GET_FRIENDS_LIST = ({ params: { userId } }, res, next) => {
+   REQUEST_HANDLER(res, next, getFriendsList, [userId])
+}
+exports.GET_FRIEND_REQUESTS_LIST = ({ params: { userId } }, res, next) => {
+   REQUEST_HANDLER(res, next, getFriendsRequestList, [userId])
+}
+exports.GET_CONVERSATIONS = ({ params: { userId }, query }, res, next) => {
+   REQUEST_HANDLER(res, next, getConversations, [userId, query])
+}
 exports.SEND_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
    REQUEST_HANDLER(res, next, addFriendRequest, [userId, body])
 }
-
 exports.ACCEPT_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
    REQUEST_HANDLER(res, next, acceptFriendRequest, [userId, body])
 }

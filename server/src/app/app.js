@@ -8,6 +8,7 @@ const cors = require('cors')
 const session = require("express-session")
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
+const morgan = require("morgan")
 const { handleError } = require("../helpers/error")
 
 // Setting up passport
@@ -22,6 +23,7 @@ app
    .use(cookieParser())
    .use(bodyParser.json())
    .use(bodyParser.urlencoded({ extended: true }))
+   .use(morgan('dev'))
 
    .use(session({
       secret: process.env.SESSION_SECRET,

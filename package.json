@@ -5,7 +5,7 @@
    "main": "",
    "scripts": {
       "client": "cd client && npm start",
-      "server":"cd server && nodemon --exec npm start"
+      "server": "cd server && nodemon --exec npm start"
    },
    "repository": {
       "type": "git",
