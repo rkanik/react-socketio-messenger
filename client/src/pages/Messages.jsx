@@ -2,19 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Route } from "react-router-dom"
 import { connect } from "react-redux"
 import io from "socket.io-client"
-import "./messages.scss"
 
 // Components
-import Sidebar from "../../layouts/sidebar/sidebar"
-import Conversation from "../../components/group-conversation/conversation.g"
-import CreateGroup from "../../components/modals/createGroup/createGroup"
+import Sidebar from "../layouts/sidebar/sidebar"
+import Conversation from "../components/group-conversation/conversation.g"
+import CreateGroup from "../components/modals/createGroup/createGroup"
 
 // Store
-import { fetchUser, setState } from "../../store/auth.store/auth.store"
-import { fetchGroupsList } from "../../store/group.store/group.store"
+import { fetchUser, setState } from "../store/auth.store/auth.store"
+import { fetchGroupsList } from "../store/group.store/group.store"
 
 // Api
-import { Api } from "../../axios/configs.axios"
+import { Api } from "../axios/configs.axios"
 
 // Socket
 var client

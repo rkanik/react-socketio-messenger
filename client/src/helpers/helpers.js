@@ -1,4 +1,4 @@
-export const resizeImage = (settings) => {
+export const resizeImage = settings => {
    var file = settings.file;
    var maxSize = settings.maxSize;
    var reader = new FileReader();

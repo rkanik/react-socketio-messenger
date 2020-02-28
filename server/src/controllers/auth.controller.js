@@ -1,16 +1,17 @@
-const Users  = require("../models/users.model")
+const Users = require("../models/users.model")
 const bCript = require('bcryptjs')
+
+const { BAD_REQUEST } = require("../helpers/http.status")
 
 exports.createUser = async (req, res) => {
    await Users.init()
    let user = new Users({
       ...req.body,
-      userName: req.body.userName.toLowerCase(),
       email: req.body.email.toLowerCase()
    })
    let validationError = user.validateSync()
-   if (validationError !== undefined) {
-      res.status(500).json({
+   if (validationError) {
+      res.status(BAD_REQUEST).json({
          error: true,
          message: validationError.message,
          errors: [...Object.keys(validationError.errors).map(key => (validationError.errors[key].message))],
@@ -35,12 +36,12 @@ exports.createUser = async (req, res) => {
    }
 }
 
-exports.loginUser = async (condition, password, done) => {
+exports.loginUser = async (email, password, done) => {
    try {
       let projection = "-__v -createdAt -updatedAt -lastVisited"
-      let user = await Users.findOne(JSON.parse(condition)).select(projection)
+      let user = await Users.findOne({ email }).select(projection)
       if (user === null)
-         return done({ error: true, message: "Invalid username or email address" }, null)
+         return done({ error: true, message: "Invalid email address" }, null)
       else if (user && !user.password)
          return done({ error: true, message: "No password" }, null)
       else {
@@ -65,7 +66,6 @@ exports.onGoogleSignin = async (_, __, profile, done) => {
 
    let user = new User({
       name: profile.displayName,
-      userName: profile._json.email.split("@")[0].replace(/\./g, ""),
       email: profile._json.email,
       emailVerified: profile._json.email_verified,
       externalId: profile.id,

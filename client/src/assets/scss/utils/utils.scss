@@ -1,4 +1,4 @@
-@import "./includes/paddings.min.scss";
+@import "./paddings/paddings.min.scss";
 
 .btn {
    border: none;
@@ -46,6 +46,10 @@ h5 {
 
 .spacer {
    width: 100%;
+}
+
+.spacer-y {
+   height: 100%;
 }
 
 .w-100 {
@@ -173,6 +177,16 @@ $elevation_transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .text-center {
    text-align: center;
+}
+
+.ta-c {
+   text-align: center;
+}
+.ta-l {
+   text-align: left;
+}
+.ta-r {
+   text-align: right;
 }
 
 .mb-0 {
@@ -420,6 +434,10 @@ input {
 .font-normal {
    font-weight: normal;
 }
+.font-bold {
+   font-weight: bold;
+}
+
 .overflow-auto {
    overflow: auto !important;
 }

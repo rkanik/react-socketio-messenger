@@ -6,6 +6,7 @@ const { INTERNAL_SERVER_ERROR, BAD_REQUEST, NOT_MODIFIED } = require("../helpers
 const ObjectId = require('mongoose').Types.ObjectId
 const Message = require("../models/joi/message.joi")
 
+// handle get
 const getChatMessages = async (userId, frndId, { limit, page }) => {
    try {
 
@@ -24,7 +25,7 @@ const getChatMessages = async (userId, frndId, { limit, page }) => {
 const getChatList = async userId => {
    try {
 
-      let resp = await Chats.find({ users: userId }, { messages: { $slice: -1 }, __v: 0,createdAt:0 })
+      let resp = await Chats.find({ users: userId }, { messages: { $slice: -1 }, __v: 0, createdAt: 0 })
       return { data: resp }
    }
    catch (err) {
@@ -32,7 +33,7 @@ const getChatList = async userId => {
    }
 }
 
-// Create chat
+// handle create
 const createChat = async (userId, frndId, { createdAt }) => {
    if (!ObjectId.isValid(userId) || !ObjectId.isValid(frndId)) {
       return {
@@ -101,6 +102,8 @@ const pushChatMessage = async (userId, frndId, message) => {
       }
    }
 }
+
+// handle deletes
 const deleteChatMessage = async (userId, frndId, msgId) => {
    try {
       let resp = await Chats.updateOne(
@@ -112,17 +115,28 @@ const deleteChatMessage = async (userId, frndId, msgId) => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
+const deleteChat = async (userId, frndId) => {
+   try {
+      let resp = Chats.deleteOne({ users: { $all: [userId, frndId] } })
+      if (resp.nModified === 0) throw new CError(BAD_REQUEST, "Error deleting chat")
+      return { data: resp }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
+}
 
 // Exports
 exports.createChat = createChat
+exports.getChatMessages = getChatMessages
+exports.createChat = createChat
 exports.sendChatMessage = pushChatMessage
+exports.deleteChatMessage = deleteChatMessage
+exports.deleteChat = deleteChat
 
 
 // GET REQUESTS
 exports.GET_CHAT_LIST = ({ params: { userId } }, res, next) => {
    REQUEST_HANDLER(res, next, getChatList, [userId])
 }
-
 exports.GET_CHAT_MESSAGES = ({ params: { userId, frndId }, query }, res, next) => {
    REQUEST_HANDLER(res, next, getChatMessages, [userId, frndId, query])
 }
@@ -131,9 +145,14 @@ exports.GET_CHAT_MESSAGES = ({ params: { userId, frndId }, query }, res, next) =
 exports.CREATE_CHAT = ({ params: { userId, frndId }, body }, res, next) => {
    REQUEST_HANDLER(res, next, createChat, [userId, frndId, body])
 }
-exports.PUSH_CHAT_MESSAGE = async ({ params: { userId, frndId }, body }, res, next) => {
+exports.PUSH_CHAT_MESSAGE = ({ params: { userId, frndId }, body }, res, next) => {
    REQUEST_HANDLER(res, next, pushChatMessage, [userId, frndId, body])
 }
-exports.DELETE_CHAT_MESSAGE = async ({ params: { userId, frndId, msgId }, res, next }) => {
+
+// DELETE REQUESTS
+exports.DELETE_CHAT_MESSAGE = ({ params: { userId, frndId, msgId }, res, next }) => {
    REQUEST_HANDLER(res, next, deleteChatMessage, [userId, frndId, msgId])
+}
+exports.DELETE_CHAT = ({ params: { userId, frndId } }, res, next) => {
+   REQUEST_HANDLER(res, next, deleteChat, [userId, frndId])
 }

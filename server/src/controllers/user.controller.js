@@ -57,7 +57,6 @@ const getFriendsRequestList = async userId => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
-
 const getConversations = async (userId, { limit, page }) => {
    try {
 
@@ -86,6 +85,14 @@ const getConversations = async (userId, { limit, page }) => {
       console.log(err.message)
       return { error: true, errorCode: err.errorCode, message: err.message }
    }
+}
+const updateUser = async (userId, data) => {
+   try {
+      let resp = await Users.updateOne({ _id: userId }, data)
+      if (resp.nModified === 0) throw new CError(BAD_REQUEST, "Error updating user")
+      return { data: resp }
+   }
+   catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
 
 const addFriendRequest = async (userId, request) => {
@@ -160,4 +167,7 @@ exports.SEND_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
 }
 exports.ACCEPT_FRIEND_REQUEST = ({ params: { userId }, body }, res, next) => {
    REQUEST_HANDLER(res, next, acceptFriendRequest, [userId, body])
+}
+exports.UPDATE_USER = ({ params: { userId }, body }, res, next) => {
+   REQUEST_HANDLER(res, next, updateUser, [userId, body])
 }

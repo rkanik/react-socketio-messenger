@@ -1,4 +1,4 @@
-/** Strategies */
+// Strategy
 const strategies = require("./strategies.passport")
 const Users = require("../models/users.model")
 const jwt = require("jsonwebtoken")
@@ -17,4 +17,5 @@ module.exports = passport => {
          return user ? done(null, { ...user._doc, token }) : done({ code: 404, message: "User not found" }, null)
       } catch (error) { done(error, null) }
    });
+
 }
