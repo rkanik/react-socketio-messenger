@@ -2,15 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Router from "./router/router"
 
-import { Provider } from 'react-redux'
-import store from "./store/index.store"
+// Context providers
+import { AuthProvider } from "./context/AuthContext"
 
 import "./assets/scss/index.scss"
 
 ReactDOM.render(
-   <Provider store={store}>
+   <AuthProvider>
       <Router />
-   </Provider>,
+   </AuthProvider>,
    document.getElementById('root')
 );
-

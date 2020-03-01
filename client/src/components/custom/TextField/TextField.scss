@@ -1,5 +1,18 @@
+$red: #f44336;
 .custom-text-field {
    position: relative;
+   &.error {
+      input {
+         border: 1px solid $red;
+         color: $red;
+      }
+      .desc {
+         color: $red;
+      }
+      label {
+         color: $red;
+      }
+   }
    label {
       font-size: 0.95em;
       margin-left: 0.4rem;
@@ -39,5 +52,9 @@
       &.pill {
          border-radius: 2rem;
       }
+   }
+   .desc {
+      font-size: 0.8em;
+      margin-left: 0.5rem;
    }
 }

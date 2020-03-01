@@ -1,9 +1,8 @@
 import React from 'react';
-import "./sidebar.scss"
 
 // Components
-import MessagesList from "../../components/messages-list/messages-list"
-import BottomNavbar from "../../components/bottomNavbar/bottomNavbar"
+import MessagesList from "../messages-list/messages-list"
+import BottomNavbar from "../bottomNavbar/bottomNavbar"
 
 const Sidebar = ({ items, user, setState, activeConversation }) => {
    return (

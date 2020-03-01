@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { AuthContext, initState } from "../context/AuthContext"
 
 // Svg assets
 import AccessAccount from "../assets/svg/access_account.svg"
@@ -14,17 +15,65 @@ import { CircularProgress } from "@material-ui/core"
 
 const LOGIN = 'LOGIN', REGISTER = 'REGISTER', FORGOT_PASS = "FORGOT_PASS"
 
-const Authentication = () => {
+const Authentication = ({ history }) => {
 
-   const [active, setActive] = useState(LOGIN)
+   const [active, setActive] = useState('')
    const [loading, setLoading] = useState(false)
 
+   const {
+      socket, isAuth, currentUser, accessToken,
+      setState, setToken, resetState
+   } = useContext(AuthContext)
+
+   console.log(isAuth, currentUser, accessToken);
+
+   useEffect(() => {
+      if (accessToken && socket) {
+         socket.emit("loginWithToken", accessToken, res => {
+            console.log("||--loginWithToken--||", res);
+            if (!res.error) { onLogin(res) }
+         })
+      }
+   }, [accessToken, socket])
+
+   useEffect(() => {
+      if (socket) {
+         console.log(socket);
+      }
+   }, [socket])
+
+   useEffect(() => {
+      isAuth && history.push("/messages")
+   }, [isAuth])
+
+   // Sync active to local storage
+   useEffect(() => { active && localStorage.setItem('authActive', active) }, [active])
+   useEffect(() => {
+      let a = localStorage.getItem('authActive'); setActive((a && a !== '') ? a : LOGIN)
+   }, [])
+
+   const handleLogin = ({ email, password }) => {
+      console.log("||--handleLogin--||");
+      socket.emit("login", { email, password }, res => {
+         if (!res.error) { onLogin(res.user, res.token) }
+         else { resetState(initState) }
+      })
+   }
+
+   const onLogin = (user, token) => {
+      console.log("||--onLogin--||");
+      token && setToken(token)
+      setState({ currentUser: user, isAuth: true })
+      setLoading(false); history.push("/messages")
+   }
+
    const handleActiveChange = val => {
+      console.log("||--handleActiveChange--||");
       setLoading(true)
       setTimeout(() => {
          setActive(val)
          setLoading(false)
-      }, 500)
+      }, 300)
    }
 
    return (
@@ -55,6 +104,9 @@ const Authentication = () => {
                {active === LOGIN && <Login
                   onActiveChange={handleActiveChange}
                   onForgotPass={() => handleActiveChange(FORGOT_PASS)}
+                  handleLoading={v => setLoading(v)}
+                  onLogin={v => handleLogin(v)}
+                  history={history}
                />}
                {active === REGISTER && <Register onActiveChange={handleActiveChange} />}
                {active === FORGOT_PASS && <ResetPassword onActiveChange={handleActiveChange} />}

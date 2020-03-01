@@ -1,56 +1,66 @@
 const Users = require("../models/users.model")
+const jwt = require("jsonwebtoken")
 const bCript = require('bcryptjs')
 
-const { BAD_REQUEST } = require("../helpers/http.status")
+const { CError, ErrorHandler } = require("../helpers/error")
+const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
 
-exports.createUser = async (req, res) => {
-   await Users.init()
-   let user = new Users({
-      ...req.body,
-      email: req.body.email.toLowerCase()
-   })
-   let validationError = user.validateSync()
-   if (validationError) {
-      res.status(BAD_REQUEST).json({
-         error: true,
-         message: validationError.message,
-         errors: [...Object.keys(validationError.errors).map(key => (validationError.errors[key].message))],
-      })
-   } else {
-      /** Hashing password */
+const registerUser = async doc => {
+   try {
+
+      await Users.init()
+      let user = new Users({ ...doc, email: doc.email.toLowerCase() })
+
+      let existedUser = await Users.findOne({ email: user.email }).select("_id")
+      if (existedUser) throw new CError(BAD_REQUEST, "User alrady exists")
+
+      let validationError = user.validateSync()
+      if (validationError) throw new CError(BAD_REQUEST, validationError.message)
+
       let salt = bCript.genSaltSync(10)
       user.password = bCript.hashSync(user.password, salt)
-      user.save().then(doc => {
-         res.status(201).json({
-            error: false,
-            message: "User created successfully!",
-            data: doc._doc
-         })
-      }).catch(err => {
-         res.status(500).json({
-            error: true,
-            errorCode: err.code,
-            message: err.errmsg
-         })
-      })
+
+      let newUser = await user.save()
+
+      if (!newUser) throw new CError(INTERNAL_SERVER_ERROR, "Error while creating user")
+      return { data: newUser }
+
    }
+   catch (e) { return { error: true, errorCode: e.errorCode || INTERNAL_SERVER_ERROR, message: e.message } }
 }
 
-exports.loginUser = async (email, password, done) => {
+exports.REGISTER_USER = async (req, res) => {
    try {
-      let projection = "-__v -createdAt -updatedAt -lastVisited"
-      let user = await Users.findOne({ email }).select(projection)
-      if (user === null)
-         return done({ error: true, message: "Invalid email address" }, null)
-      else if (user && !user.password)
-         return done({ error: true, message: "No password" }, null)
-      else {
-         let valid = bCript.compareSync(password, user.password)
-         if (!valid) return done({ error: true, message: "Invalid password" }, null)
-         else return done(null, user)
-      }
+      let resp = await registerUser(req.body)
+      if (resp.error) throw new ErrorHandler(resp.errorCode, resp.message)
+      res.status(OK).json(resp.data)
    }
-   catch (error) { return done(error, null) }
+   catch (error) { next(error) }
+}
+
+exports.loginUser = async (email, password) => {
+   try {
+      // Getting user
+      let projection = "name email thumbnail status password"
+      let user = await Users.findOne({ email }).select(projection)
+      if (!user) return { error: true, message: "User not found with the email address" }
+
+      // Checking is password exist
+      if (user && !user.password)
+         return { error: true, message: "No password" }
+
+      // Matching passwords
+      let valid = bCript.compareSync(password, user.password)
+      if (!valid) return { error: true, message: "Invalid password" }
+
+      // Signing json web token
+      let token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '168h' })
+
+      // returning with token
+      return { user: { ...user._doc, password: undefined }, token }
+
+   }
+   catch (error) { return { error: true, message: error.message } }
 }
 
 exports.onGoogleSignin = async (_, __, profile, done) => {
@@ -90,3 +100,5 @@ exports.onGoogleSignin = async (_, __, profile, done) => {
          done(true, null, err.message)
       })
 }
+
+exports.registerUser = registerUser

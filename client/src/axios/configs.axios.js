@@ -6,8 +6,9 @@ export const Api = axios.create({
    baseURL: `${DEV_ROOT}`
 })
 
-export const User = axios.create({
-   baseURL: `${DEV_ROOT}/users`
+export const Users = axios.create({
+   baseURL: `${DEV_ROOT}/api/users`
 })
 
-export default { User, Api }
+
+export default { Users, Api }

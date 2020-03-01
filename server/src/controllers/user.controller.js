@@ -57,23 +57,25 @@ const getFriendsRequestList = async userId => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
-const getConversations = async (userId, { limit, page }) => {
+const getConversations = async (userId, { limit, page } = { limit: 20, page: 1 }) => {
    try {
 
-      let l = limit || 20, p = page || 1
+      if (!ObjectId.isValid(userId)) throw new CError(BAD_REQUEST, `Invalid UserId ${userId}`)
+
+      //let l = limit || 20, p = page || 1
 
       let projection = { messages: { $slice: -1 }, members: 0, __v: 0, createdAt: 0 }
       let groups = await Groups
          .find({ "members.userId": userId }, projection)
          .sort({ "messages.sentAt": -1 })
-         .limit((l / 2) * p) || []
+         .limit((limit / 2) * page) || []
 
       delete projection.members
 
       let chats = await Chats
          .find({ users: userId }, projection)
          .sort({ 'message.sentAt': -1 })
-         .limit((l / 2) * p) || []
+         .limit((limit / 2) * page) || []
 
       if (!chats) throw new CError(BAD_REQUEST, "Chats not found")
 
@@ -145,6 +147,16 @@ const acceptFriendRequest = async (userId, request) => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
+
+// Method exports
+exports.getUser = getUser
+exports.getFriend = getFriend
+exports.getFriendsList = getFriendsList
+exports.getFriendsRequestList = getFriendsRequestList
+exports.getConversations = getConversations
+exports.updateUser = updateUser
+exports.addFriendRequest = addFriendRequest
+exports.acceptFriendRequest = acceptFriendRequest
 
 // GET REQUESTS
 exports.GET_USER = ({ params: { userId } }, res, nxt) => {
