@@ -1,21 +1,22 @@
 import React from 'react';
 
 // Components
-import MessagesList from "../messages-list/messages-list"
+//import MessagesList from "../messages-list/messages-list"
+import CoversationsList from "../Messages/ConversationsList"
 import BottomNavbar from "../bottomNavbar/bottomNavbar"
 
-const Sidebar = ({ items, user, setState, activeConversation }) => {
+const Sidebar = ({ user, conversations }) => {
    return (
       <div className="sidebar pos-rel d-flex fd-col">
          <div className="px-5 py-4 d-flex">
             <img className="thumbnail circle" src={user && user.thumbnail ? user.thumbnail : ""} alt="" />
             <div className="ml-5 mw-max">
                <h3 className="font-normal">{user && user.name}</h3>
-               <p className="username">{user && user.userName}</p>
+               <p className="username">{user && user.email}</p>
             </div>
             <div className="spacer"></div>
             <div className="actions mw-max">
-               <i onClick={() => setState({ createGroup: true })} className="pos-rel circle fal fa-plus mr-2" />
+               <i className="pos-rel circle fal fa-plus mr-2" />
                <i className="pos-rel circle fas fa-cog" />
             </div>
          </div>
@@ -25,7 +26,8 @@ const Sidebar = ({ items, user, setState, activeConversation }) => {
                <i className="pos-abs far fa-search"></i>
             </div>
          </div>
-         <MessagesList items={items} userId={user._id} activeItem={activeConversation} />
+         {/* <MessagesList items={items} userId={user._id} activeItem={activeConversation} /> */}
+         <CoversationsList items={conversations} />
          <BottomNavbar />
       </div>
    );

@@ -19,9 +19,11 @@ const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
 const { REQUEST_HANDLER } = require("./request.handler")
 const { createChat } = require("./chat.controller")
 
-const getUser = async userId => {
+const getUser = async (userId, select = []) => {
    try {
-      let user = await Users.findById(userId).select("-__v -friends -friendRequests")
+      let user = await Users.findById(userId).select(select.join(" "))
+      if (user) return { error: false, data: user }
+      return { error: true, message: "User not found!" }
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
@@ -81,7 +83,7 @@ const getConversations = async (userId, { limit, page } = { limit: 20, page: 1 }
 
       let conversations = groups.concat(chats).sort((a, b) => b.messages[0].sentAt - a.messages[0].sentAt)
 
-      return { data: conversations }
+      return { error: false, data: conversations }
    }
    catch (err) {
       console.log(err.message)

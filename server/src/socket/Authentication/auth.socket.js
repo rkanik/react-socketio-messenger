@@ -7,6 +7,7 @@ module.exports = socket => {
    socket.on('login', async ({ email, password }, done) => {
       let { error, user, token, message } = await loginUser(email, password)
       if (error) return done({ error, message })
+      console.log(user, token)
       done({ user, token })
    })
 
@@ -16,14 +17,8 @@ module.exports = socket => {
       done(user)
    })
 
-   socket.on('loginWithToken', async (token, done) => {
-      try {
-         let verified = await verifyToken(token)
-         let projection = "name email thumbnail status"
-         let user = await Users.findById(verified._id).select(projection)
-         if (user) return done(user)
-         done({ error: true, message: "User not found" })
-      }
+   socket.on('verifyToken', async (token, done) => {
+      try { await verifyToken(token); done({ error: false, message: "Token verified" }) }
       catch (error) { done({ error: true, message: error.message }) }
    })
 }

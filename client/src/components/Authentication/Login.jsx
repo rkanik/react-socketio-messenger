@@ -1,5 +1,4 @@
-import React, { useState, useContext } from 'react';
-//import { AuthContext, initState } from "../../context/AuthContext"
+import React, { useState } from 'react';
 
 // Components
 import TextField from "../custom/TextField/TextFiled"
@@ -11,8 +10,7 @@ const Login = ({ onActiveChange, onForgotPass, handleLoading, history, onLogin }
    const [password, setPassword] = useState("123456")
    const [emailError, setEmailError] = useState(false)
    const [passError, setPassError] = useState(false)
-   //const { socket, setState, setToken, resetState } = useContext(AuthContext)
-
+ 
    const handleLogin = () => {
       handleLoading(true)
       if (isValid()) { onLogin({ email, password }) }

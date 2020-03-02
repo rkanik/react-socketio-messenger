@@ -20,55 +20,39 @@ const Authentication = ({ history }) => {
    const [active, setActive] = useState('')
    const [loading, setLoading] = useState(false)
 
-   const {
-      socket, isAuth, currentUser, accessToken,
-      setState, setToken, resetState
-   } = useContext(AuthContext)
+   const { socket, accessToken, setToken, resetState } = useContext(AuthContext)
 
-   console.log(isAuth, currentUser, accessToken);
 
+   // Login with access token
    useEffect(() => {
       if (accessToken && socket) {
-         socket.emit("loginWithToken", accessToken, res => {
-            console.log("||--loginWithToken--||", res);
-            if (!res.error) { onLogin(res) }
+         setLoading(true);
+         socket.emit("verifyToken", accessToken, ({ error }) => {
+            setLoading(false)
+            error ? resetState(initState) : history.replace("/messages")
          })
       }
-   }, [accessToken, socket])
+   }, [accessToken, socket, history, resetState])
 
-   useEffect(() => {
-      if (socket) {
-         console.log(socket);
-      }
-   }, [socket])
-
-   useEffect(() => {
-      isAuth && history.push("/messages")
-   }, [isAuth])
-
-   // Sync active to local storage
-   useEffect(() => { active && localStorage.setItem('authActive', active) }, [active])
-   useEffect(() => {
-      let a = localStorage.getItem('authActive'); setActive((a && a !== '') ? a : LOGIN)
-   }, [])
-
+   // Login with email and password
    const handleLogin = ({ email, password }) => {
-      console.log("||--handleLogin--||");
-      socket.emit("login", { email, password }, res => {
-         if (!res.error) { onLogin(res.user, res.token) }
-         else { resetState(initState) }
+      setLoading(true);
+      socket.emit("login", { email, password }, ({ error, token }) => {
+         setLoading(false);
+         if (error) return resetState(initState)
+         setToken(token)
       })
    }
 
-   const onLogin = (user, token) => {
-      console.log("||--onLogin--||");
-      token && setToken(token)
-      setState({ currentUser: user, isAuth: true })
-      setLoading(false); history.push("/messages")
-   }
+   // Sync active tab to local storage
+   useEffect(() => { active && localStorage.setItem('authActive', active) }, [active])
+   useEffect(() => {
+      let a = localStorage.getItem('authActive');
+      setActive((a && a !== '') ? a : LOGIN)
+   }, [])
 
+   // Handling switch between login and register pages
    const handleActiveChange = val => {
-      console.log("||--handleActiveChange--||");
       setLoading(true)
       setTimeout(() => {
          setActive(val)

@@ -1,30 +1,47 @@
 import React, { useContext, useEffect } from 'react';
-import { AuthContext } from "../context/AuthContext"
+import { AuthContext, initState } from "../context/AuthContext"
+import { MessageContext } from "../context/MessageContext"
 
 // Components
-//import Sidebar from "../components/layouts/Sidebar"
+import Sidebar from "../components/layouts/Sidebar"
 
-const Messages = props => {
-   
-   const { socket, currentUser, isAuth } = useContext(AuthContext)
-   console.log(currentUser, isAuth);
+const Messages = ({ history }) => {
 
-   // Effexcts
+   const { socket, currentUser, isAuth, setState, accessToken, resetState } = useContext(AuthContext)
+   const { setMessageState } = useContext(MessageContext)
+
+   // Verifing Access Token
    useEffect(() => {
-      (isAuth && currentUser) && getConversations(currentUser.token)
-   }, [isAuth, currentUser])
+      if (socket && accessToken) {
+         socket.emit("verifyToken", accessToken, ({ error }) => {
+            if (error) {
+               resetState(initState)
+               return history.replace("/authenticate")
+            }
+            setState({ isAuth: true })
+         })
+      }
+   }, [accessToken, socket, setState, resetState, history])
 
-   // Methods
-   const getConversations = token => {
-      console.log("getConversations", token);
-      socket.emit('getConversations', token, res => {
-         console.log(res);
-      })
-   }
+   // Is auth then getting informations
+   useEffect(() => {
+      if (isAuth && accessToken && socket) {
+         let select = ['name', 'email', 'thumbnail']
+         socket.emit("getUserFromToken", { token: accessToken, select }, ({ error, user }) => {
+            !error && setState({ currentUser: user })
+         })
+
+         socket.emit("getConversations", accessToken, ({ error, conversations }) => {
+            if (!error) {
+               setMessageState({ conversations })
+            }
+         })
+      }
+   }, [isAuth, accessToken, socket, setState, setMessageState])
 
    return (
       <div className="messages d-flex">
-         {/* <Sidebar user={currentUser} /> */}
+         <Sidebar user={currentUser} />
       </div>
    )
 }
