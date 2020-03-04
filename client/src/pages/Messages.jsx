@@ -2,8 +2,13 @@ import React, { useContext, useEffect } from 'react';
 import { AuthContext, initState } from "../context/AuthContext"
 import { MessageContext } from "../context/MessageContext"
 
+// Router
+import { Switch, Route } from "react-router-dom"
+
 // Components
+import Settings from "../components/Settings"
 import Sidebar from "../components/layouts/Sidebar"
+import Conversation from "../components/Conversation/Coversation"
 
 const Messages = ({ history }) => {
 
@@ -27,7 +32,8 @@ const Messages = ({ history }) => {
    useEffect(() => {
       if (isAuth && accessToken && socket) {
          let select = ['name', 'email', 'thumbnail']
-         socket.emit("getUserFromToken", { token: accessToken, select }, ({ error, user }) => {
+
+         socket.emit("getUserFromToken", { token: accessToken, select, now: Date.now() }, ({ error, user }) => {
             !error && setState({ currentUser: user })
          })
 
@@ -36,12 +42,23 @@ const Messages = ({ history }) => {
                setMessageState({ conversations })
             }
          })
+
+         socket.emit("getFriendsList", accessToken, ({ error, friends, message }) => {
+            console.log(error, friends, message)
+            if (!error) {
+               setMessageState({ friends })
+            }
+         })
       }
    }, [isAuth, accessToken, socket, setState, setMessageState])
 
    return (
       <div className="messages d-flex">
          <Sidebar user={currentUser} />
+         <Switch>
+            <Route path="/messages/settings" component={Settings} exact />
+            <Route path="/messages/:convId" render={(props) => <Conversation {...props} />} exact />
+         </Switch>
       </div>
    )
 }

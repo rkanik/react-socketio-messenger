@@ -14,10 +14,12 @@ const ConversationsList = () => {
 
    return (
       <div className='conversations h-100p text-white'>{
-         conversations.map(({ _id, name, thumbnail, messages }) => (
+         conversations.map(({ _id, name, thumbnail, messages, type }) => (
             <ConversationsListItem
                key={_id}
+               id={_id}
                name={name}
+               type={type}
                thumbnail={thumbnail}
                message={messages[0]}
                userId={currentUser._id}

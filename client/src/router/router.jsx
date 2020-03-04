@@ -10,7 +10,7 @@ import { MessageProvider } from "../context/MessageContext"
 const Router = () => (
    <BrowserRouter>
       <Switch>
-         <Route path='/messages' exact component={MessageProvider} />
+         <Route path='/messages' component={MessageProvider} />
          <Route path='/authenticate' exact component={Authentication} />
          <Route path='/builder' exact component={Builder} />
          <Route path='*' component={Home} />

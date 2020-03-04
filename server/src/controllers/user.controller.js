@@ -5,9 +5,9 @@ const Groups = require("../models/groups.model")
 const Chats = require("../models/chats.model")
 
 // Schema
+const Friend = require("../models/joi/friend.joi")
 const ObjectId = require("mongoose").Types.ObjectId
 const FriendRequest = require("../models/joi/friendRequest")
-const Friend = require("../models/joi/friend.joi")
 
 // Error handlers
 const { CError } = require("../helpers/error")
@@ -16,8 +16,8 @@ const { CError } = require("../helpers/error")
 const { BAD_REQUEST, INTERNAL_SERVER_ERROR } = require("../helpers/http.status")
 
 // Request Handlers
-const { REQUEST_HANDLER } = require("./request.handler")
 const { createChat } = require("./chat.controller")
+const { REQUEST_HANDLER } = require("./request.handler")
 
 const getUser = async (userId, select = []) => {
    try {
@@ -41,9 +41,9 @@ const getFriendsList = async userId => {
       let user = await Users.findById(userId, { friends: { $slice: -limit } })
       if (!user) throw new CError(BAD_REQUEST, "User not found")
       let friends = (user && user.friends) ? await Promise.all(user.friends.map(async friend => {
-         return await Users.findById(friend.userId).select("name email userName thumbnail status")
+         return await Users.findById(friend.userId).select("name email thumbnail status")
       })) : []
-      return { data: friends }
+      return { error: false, data: friends }
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
@@ -72,7 +72,7 @@ const getConversations = async (userId, { limit, page } = { limit: 20, page: 1 }
          .sort({ "messages.sentAt": -1 })
          .limit((limit / 2) * page) || []
 
-      delete projection.members
+      groups = groups.map(g => ({ ...g._doc, type: 'g' }))
 
       let chats = await Chats
          .find({ users: userId }, projection)
@@ -80,6 +80,7 @@ const getConversations = async (userId, { limit, page } = { limit: 20, page: 1 }
          .limit((limit / 2) * page) || []
 
       if (!chats) throw new CError(BAD_REQUEST, "Chats not found")
+      chats = chats.map(c => ({ ...c._doc, type: 'c' }))
 
       let conversations = groups.concat(chats).sort((a, b) => b.messages[0].sentAt - a.messages[0].sentAt)
 
@@ -98,7 +99,6 @@ const updateUser = async (userId, data) => {
    }
    catch (err) { return { error: true, errorCode: err.errorCode, message: err.message } }
 }
-
 const addFriendRequest = async (userId, request) => {
    try {
       // Checking userId and frined's userId
@@ -153,12 +153,12 @@ const acceptFriendRequest = async (userId, request) => {
 // Method exports
 exports.getUser = getUser
 exports.getFriend = getFriend
-exports.getFriendsList = getFriendsList
-exports.getFriendsRequestList = getFriendsRequestList
-exports.getConversations = getConversations
 exports.updateUser = updateUser
+exports.getFriendsList = getFriendsList
+exports.getConversations = getConversations
 exports.addFriendRequest = addFriendRequest
 exports.acceptFriendRequest = acceptFriendRequest
+exports.getFriendsRequestList = getFriendsRequestList
 
 // GET REQUESTS
 exports.GET_USER = ({ params: { userId } }, res, nxt) => {

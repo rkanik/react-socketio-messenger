@@ -11,6 +11,15 @@
 @import "./resetPassword.scss";
 @import "./authentication.scss";
 
+// Layouts
+@import "./layouts/Header";
+@import "./layouts/Sidebar";
+
+// Conversation
+@import "./Coversation/Conversation";
+
 @import "./messages.scss";
-@import "./sidebar.scss";
+
 @import "./conversations.scss";
+@import "./bottomNavbar.scss";
+@import "./FriendsList";

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import moment from "moment"
 
+import { Link } from 'react-router-dom'
+
 const MS_IN_A_DAY = 86400000
 //const MS_IN_A_HOUR = 3600000
 //const MS_IN_A_MINUTE = 60000
 
 
-
-const ConversationsListItem = ({ name, thumbnail, message, userId, socket, token }) => {
-
+const ConversationsListItem = ({ id, name, thumbnail, message, type, userId, socket, token }) => {
    const [lastMessage, setLastMessage] = useState("")
    const [initial, setInitial] = useState("")
    const [timeAgo, setTimeAgo] = useState("")
@@ -27,8 +27,6 @@ const ConversationsListItem = ({ name, thumbnail, message, userId, socket, token
    // Handle message change
    useEffect(() => {
 
-      console.log("CLT - [message, userId, socket, token]");
-
       const fetchFrndName = async frndId => new Promise((res, rej) => {
          let data = { token, userId: frndId, select: ['name'] }
          socket.emit("getUser", data, ({ error, user }) => {
@@ -36,7 +34,6 @@ const ConversationsListItem = ({ name, thumbnail, message, userId, socket, token
             res(user.name)
          })
       })
-
       const formatLastMessage = async () => {
          if (message.sendBy === userId) {
             if (message.type === 'TEXT') {
@@ -68,23 +65,24 @@ const ConversationsListItem = ({ name, thumbnail, message, userId, socket, token
 
    }, [message, userId, socket, token])
 
-
    return (
-      <div className='cl-item d-flex px-5 py-3'>
-         {thumbnail ? <img src={thumbnail} alt='Group Thumbnail' /> :
-            <div className='initial circle pos-rel'>
-               <p className='to-center'>{initial}</p>
+      <Link to={`/messages/${type}/${id}`}>
+         <div className='cl-item d-flex px-5 py-3'>
+            {thumbnail ? <img src={thumbnail} alt='Group Thumbnail' /> :
+               <div className='initial circle pos-rel'>
+                  <p className='to-center'>{initial}</p>
+               </div>
+            }
+            <div className='pl-5 pt-1 w-100'>
+               <div className='d-flex'>
+                  <p className='title mw-max'>{name}</p>
+                  <div className="spacer"></div>
+                  <p className="time mw-max mt-1">{timeAgo}</p>
+               </div>
+               <p className='message'>{lastMessage}</p>
             </div>
-         }
-         <div className='pl-5 pt-1 w-100'>
-            <div className='d-flex'>
-               <p className='title mw-max'>{name}</p>
-               <div className="spacer"></div>
-               <p className="time mw-max mt-1">{timeAgo}</p>
-            </div>
-            <p className='message'>{lastMessage}</p>
          </div>
-      </div>
+      </Link>
    );
 }
 

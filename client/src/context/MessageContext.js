@@ -6,7 +6,10 @@ import { MessageReducer } from "./reducers/MessageReducer"
 import Message from "../pages/Messages"
 
 // Initial states
-const initialState = { conversations: [] }
+const initialState = {
+   conversations: [],
+   friends: []
+}
 
 export const messageState = { ...initialState }
 export const MessageContext = createContext(initialState)
